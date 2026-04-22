@@ -30,9 +30,11 @@ services:
       - "8000:8000"
     depends_on:
       - game-service
+    environment:
+      JWT_SECRET: supersecretkey
 
   auth-service:
-    build: ./auth-service
+    build: ./backend/auth-service
     ports:
       - "8002:8002"
     environment:
@@ -40,6 +42,12 @@ services:
       JWT_SECRET: supersecretkey
     depends_on:
       - postgres
+
+  image-service:
+    build: ./backend/image-service
+    container_name: image-service
+    ports:
+      - "8003:8003"
 
 volumes:
   postgres_data:
