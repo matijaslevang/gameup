@@ -1,0 +1,18 @@
+<nav>
+
+  <h1>Gameup</h1>
+
+  <a routerLink="/">Games</a>
+
+  <span *ngIf="!isLoggedIn()">
+    <a routerLink="/login">Login</a>
+  </span>
+
+  <span *ngIf="isLoggedIn()">
+    <a routerLink="/add-game">Add new game</a>
+  </span>
+
+  <span *ngIf="isLoggedIn()">
+    <button (click)="logout()">Logout</button>
+  </span>
+</nav>

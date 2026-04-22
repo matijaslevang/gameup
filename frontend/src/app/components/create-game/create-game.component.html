@@ -1,0 +1,12 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <input formControlName="name" placeholder="Name" />
+  <input formControlName="genre" placeholder="Genre" />
+  <textarea formControlName="description" placeholder="Description"></textarea>
+  <input type="date" formControlName="release_date" />
+
+  <input type="file" (change)="onFilesChange($event)" multiple />
+
+  <button type="submit" [disabled]="isSubmitting">
+    {{ isSubmitting ? 'Submitting...' : 'Create Game' }}
+  </button>
+</form>
