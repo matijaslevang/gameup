@@ -86,6 +86,23 @@ async fn forward_upload_images(
     ).into_response())
 }
 
+async fn forward_get_images(
+    Path(game_id): Path<i32>,
+) -> Result<Response, StatusCode> {
+    let resp = reqwest::get(
+        format!("http://image-service:8003/images/{}", game_id)
+    )
+    .await
+    .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = axum::http::StatusCode::from_u16(resp.status().as_u16())
+        .unwrap();
+
+    let body = resp.bytes().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    Ok((status, body).into_response())
+}
+
 async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
     let resp = reqwest::Client::new()
         .post("http://game-service:8001/games")
@@ -167,6 +184,7 @@ async fn main() {
         // public
         .route("/api/games", get(forward_games))
         .route("/api/games/:id", get(forward_game))
+        .route("/api/images/:game_id", get(forward_get_images))
         
         // auth routes (forward to auth service)
         .route("/api/login", post(forward_login))
