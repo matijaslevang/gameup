@@ -20,4 +20,8 @@ export class ImageService {
     }
     return this.http.post(this.apiUrl + "/" + gameId, formData);
   }
+
+  getImages(gameId: string) {
+    return this.http.get<string[]>(this.apiUrl + "/" + gameId);
+}
 }

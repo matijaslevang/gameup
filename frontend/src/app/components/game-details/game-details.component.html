@@ -3,4 +3,13 @@
 <div *ngIf="game">
   <p><b>Name:</b> {{ game.name }}</p>
   <p><b>Genre:</b> {{ game.genre }}</p>
+  <p><b>Description:</b> {{ game.description }}</p>
+  <p><b>Release Date:</b> {{ game.release_date }}</p>
+</div>
+
+<div *ngIf="images.length > 0">
+  <h3>Images</h3>
+  <div class="image-grid">
+    <img *ngFor="let img of images" [src]="img" alt="Game image" />
+  </div>
 </div>
