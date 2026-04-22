@@ -13,6 +13,7 @@ use axum::{
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use axum::middleware;
 use axum::body::Bytes;
+use axum::response::IntoResponse;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Claims {
@@ -51,6 +52,39 @@ async fn auth_middleware(
     Ok(next.run(req).await)
 }
 
+async fn forward_upload_images(
+    Path(game_id): Path<i32>,
+    req: Request<axum::body::Body>,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    let content_type = req
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .cloned()
+        .ok_or(StatusCode::BAD_REQUEST)?;
+
+    let body_bytes = axum::body::to_bytes(req.into_body(), usize::MAX)
+        .await
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
+
+    let resp = client
+        .post(format!("http://image-service:8003/images/{}", game_id))
+        .header(header::CONTENT_TYPE, content_type)
+        .body(body_bytes)
+        .send()
+        .await
+        .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = resp.status();
+    let body = resp.bytes().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    Ok((
+        status,
+        [(header::CONTENT_TYPE, "application/json")],
+        body,
+    ).into_response())
+}
 
 async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
     let resp = reqwest::Client::new()
@@ -126,6 +160,7 @@ async fn main() {
 
     let protected_routes = Router::new()
         .route("/api/games", post(forward_create_game))
+        .route("/api/images/:game_id", post(forward_upload_images))
         .route_layer(middleware::from_fn(auth_middleware));
 
     let app = Router::new()
