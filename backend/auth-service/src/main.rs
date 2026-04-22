@@ -11,8 +11,8 @@ use std::{env, time::{SystemTime, UNIX_EPOCH}};
 use tokio::net::TcpListener;
 use jsonwebtoken::{encode, Header, EncodingKey};
 use argon2::{Argon2, PasswordHasher, PasswordVerifier};
-use password_hash::{SaltString, PasswordHash};
-use rand_core::OsRng;
+use argon2::password_hash::{SaltString, PasswordHash};
+use argon2::password_hash::rand_core::OsRng;
 
 #[derive(Clone)]
 struct AppState {
@@ -123,6 +123,26 @@ async fn main() {
     let pool = PgPool::connect(&database_url)
         .await
         .expect("Failed to connect to DB");
+
+    sqlx::query(
+        "INSERT INTO users (username, password_hash, role)
+        VALUES ($1, $2, 'admin')
+        ON CONFLICT (username) DO NOTHING"
+    )
+    .bind("asd")
+    .bind({
+        use argon2::{Argon2, PasswordHasher};
+        use argon2::password_hash::{SaltString, rand_core::OsRng};
+
+        let salt = SaltString::generate(&mut OsRng);
+        Argon2::default()
+            .hash_password("asd".as_bytes(), &salt)
+            .unwrap()
+            .to_string()
+    })
+    .execute(&pool)
+    .await
+    .unwrap();
 
     let state = AppState { pool, jwt_secret };
 
