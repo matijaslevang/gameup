@@ -48,6 +48,8 @@ services:
     container_name: image-service
     ports:
       - "8003:8003"
+    volumes:
+      - ./uploads:/app/uploads
 
 volumes:
   postgres_data:
