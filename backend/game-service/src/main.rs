@@ -9,23 +9,52 @@ use axum::extract::State;
 use serde::Deserialize;
 use axum::http::Method;
 use axum::extract::Path;
+use sqlx::types::chrono::NaiveDate;
+
+#[derive(Serialize)]
+struct CreateGameResponse {
+    id: i32,
+}
 
 #[derive(Serialize, sqlx::FromRow)]
 struct Game {
     id: i32,
     name: String,
     genre: String,
+    description: String,
+    release_date: NaiveDate,
+    video_url: Option<String>,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+struct GameImage {
+    id: i32,
+    game_id: i32,
+    image_url: String,
+}
+
+#[derive(Serialize)]
+struct GameWithMedia {
+    id: i32,
+    name: String,
+    genre: String,
+    description: String,
+    release_date: NaiveDate,
+    video_url: Option<String>,
+    images: Vec<String>,
 }
 
 #[derive(Deserialize)]
 struct CreateGame {
     name: String,
     genre: String,
+    description: Option<String>,
+    release_date: Option<NaiveDate>,
 }
 
-async fn get_games(pool: axum::extract::State<PgPool>) -> Json<Vec<Game>> {
-    let games = sqlx::query_as::<_, Game>("SELECT id, name, genre FROM games")
-        .fetch_all(&pool.0)
+async fn get_games(State(pool): State<PgPool>) -> Json<Vec<Game>> {
+    let games = sqlx::query_as::<_, Game>("SELECT id, name, genre, description, release_date, video_url FROM games")
+        .fetch_all(&pool)
         .await
         .unwrap();
 
@@ -35,15 +64,23 @@ async fn get_games(pool: axum::extract::State<PgPool>) -> Json<Vec<Game>> {
 async fn create_game(
     State(pool): State<PgPool>,
     Json(payload): Json<CreateGame>,
-) -> &'static str {
-    sqlx::query("INSERT INTO games (name, genre) VALUES ($1, $2)")
-        .bind(payload.name)
-        .bind(payload.genre)
-        .execute(&pool)
-        .await
-        .unwrap();
+) -> Json<CreateGameResponse> {
+    let id: i32 = sqlx::query_scalar(
+        r#"
+        INSERT INTO games (name, genre, description, release_date)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id
+        "#
+    )
+    .bind(payload.name)
+    .bind(payload.genre)
+    .bind(payload.description)
+    .bind(payload.release_date)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
 
-    "Game created"
+    Json(CreateGameResponse { id })
 }
 
 async fn get_game(
@@ -51,7 +88,7 @@ async fn get_game(
     State(pool): State<PgPool>,
 ) -> Json<Game> {
     let game = sqlx::query_as::<_, Game>(
-        "SELECT id, name, genre FROM games WHERE id = $1"
+        "SELECT id, name, genre, description, release_date, video_url FROM games WHERE id = $1"
     )
     .bind(id)
     .fetch_one(&pool)
@@ -74,6 +111,36 @@ async fn main() {
             }
         }
     };
+
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS games (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            description TEXT NOT NULL,
+            release_date DATE NOT NULL,
+            video_url TEXT,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        "#
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS game_images (
+            id SERIAL PRIMARY KEY,
+            game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
+            image_url TEXT NOT NULL
+        );
+        "#
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
 
     let app = Router::new()
         .route("/games", get(get_games).post(create_game))
