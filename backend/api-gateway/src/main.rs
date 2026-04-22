@@ -1,4 +1,5 @@
-use axum::{routing::get, Router};
+use axum::Router;
+use axum::routing::{get, post};
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
 use axum::http::Method;
@@ -11,8 +12,9 @@ use axum::{
 };
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use axum::middleware;
+use axum::body::Bytes;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct Claims {
     sub: String,
     role: String,
@@ -49,6 +51,26 @@ async fn auth_middleware(
     Ok(next.run(req).await)
 }
 
+
+async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
+    let resp = reqwest::Client::new()
+        .post("http://game-service:8001/games")
+        .header("Content-Type", "application/json")
+        .body(body)
+        .send()
+        .await
+        .unwrap();
+
+    let status = resp.status();
+    let body = resp.bytes().await.unwrap();
+
+    (
+        status,
+        [(axum::http::header::CONTENT_TYPE, "application/json")],
+        body
+    )
+}
+
 async fn forward_games() -> String {
     let resp = reqwest::get("http://game-service:8001/games")
         .await
@@ -69,7 +91,7 @@ async fn forward_game(Path(id): Path<i32>) -> String {
         .unwrap()
 }
 
-async fn forward_login(body: String) -> String {
+async fn forward_login(body: Bytes) -> String {
     reqwest::Client::new()
         .post("http://auth-service:8002/login")
         .body(body)
@@ -82,7 +104,7 @@ async fn forward_login(body: String) -> String {
         .unwrap()
 }
 
-async fn forward_register(body: String) -> String {
+async fn forward_register(body: Bytes) -> String {
     reqwest::Client::new()
         .post("http://auth-service:8002/register")
         .body(body)
@@ -104,13 +126,13 @@ async fn main() {
 
     let protected_routes = Router::new()
         .route("/api/games", post(forward_create_game))
-        .route("/api/games/:id", get(forward_game)) // or protect only write ops
         .route_layer(middleware::from_fn(auth_middleware));
 
     let app = Router::new()
         // public
         .route("/api/games", get(forward_games))
-
+        .route("/api/games/:id", get(forward_game))
+        
         // auth routes (forward to auth service)
         .route("/api/login", post(forward_login))
         .route("/api/register", post(forward_register))
