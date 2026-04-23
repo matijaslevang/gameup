@@ -1,9 +1,12 @@
-<h1>Games</h1>
+<h1 class="title">All Games</h1>
 
-<ul>
-  <li *ngFor="let game of games">
-    <a [routerLink]="['/games', game.id]">
-      {{ game.name }} - {{ game.genre }}
-    </a>
-  </li>
-</ul>
+<div class="cards-container">
+  <div class="game-card" *ngFor="let game of games">
+    <h2>{{ game.name }}</h2>
+    <p class="genre">{{ game.genre }}</p>
+
+    <button [routerLink]="['/games', game.id]">
+      View
+    </button>
+  </div>
+</div>
