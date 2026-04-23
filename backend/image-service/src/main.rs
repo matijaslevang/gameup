@@ -9,6 +9,7 @@ use std::{fs, io::Write};
 use tokio::net::TcpListener;
 use axum::Json;
 use tower_http::services::ServeDir;
+use axum::extract::DefaultBodyLimit;
 
 async fn upload_images(
     Path(game_id): Path<i32>,
@@ -62,7 +63,8 @@ async fn main() {
     let app = Router::new()
         .route("/images/:game_id", post(upload_images))
         .route("/images/:game_id", get(get_images))
-        .nest_service("/uploads", ServeDir::new("/app/uploads"));
+        .nest_service("/uploads", ServeDir::new("/app/uploads"))
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 500));
 
     let listener = TcpListener::bind("0.0.0.0:8003").await.unwrap();
 
