@@ -1,4 +1,4 @@
-use axum::{routing::{get, post}, Json, Router};
+use axum::{routing::{get}, Json, Router};
 use serde::Serialize;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
@@ -7,7 +7,6 @@ use std::time::Duration;
 use tokio::time::sleep;
 use axum::extract::State;
 use serde::Deserialize;
-use axum::http::Method;
 use axum::extract::Path;
 use sqlx::types::chrono::NaiveDate;
 
@@ -24,24 +23,6 @@ struct Game {
     description: String,
     release_date: NaiveDate,
     video_url: Option<String>,
-}
-
-#[derive(Serialize, sqlx::FromRow)]
-struct GameImage {
-    id: i32,
-    game_id: i32,
-    image_url: String,
-}
-
-#[derive(Serialize)]
-struct GameWithMedia {
-    id: i32,
-    name: String,
-    genre: String,
-    description: String,
-    release_date: NaiveDate,
-    video_url: Option<String>,
-    images: Vec<String>,
 }
 
 #[derive(Deserialize)]
