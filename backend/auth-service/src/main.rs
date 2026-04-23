@@ -34,7 +34,6 @@ struct LoginRequest {
 
 #[derive(sqlx::FromRow)]
 struct User {
-    id: i32,
     username: String,
     password_hash: String,
     role: String,
