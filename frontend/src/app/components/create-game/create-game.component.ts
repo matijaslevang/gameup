@@ -20,6 +20,7 @@ export class CreateGameComponent {
     release_date: ''
   };
 
+  genres: string[] = ['Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Sports', 'FPS', 'Platformer'];
   form: FormGroup;
   selectedFiles: File[] = [];
   selectedVideo: File | null = null;
@@ -79,8 +80,6 @@ export class CreateGameComponent {
 
     this.gameService.createGame(this.form.value).subscribe({
       next: (game) => {
-        console.log('Game created:', game);
-
         const gameId = game.id;
 
         const uploadImages$ = this.selectedFiles.length > 0
@@ -94,14 +93,12 @@ export class CreateGameComponent {
         // handle combinations cleanly
         if (uploadImages$) {
           uploadImages$.subscribe({
-            next: () => console.log('Images uploaded'),
             error: (err) => console.error(err)
           });
         }
 
         if (uploadVideo$) {
           uploadVideo$.subscribe({
-            next: () => console.log('Video uploaded'),
             error: (err) => console.error(err)
           });
         }

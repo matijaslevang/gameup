@@ -11,7 +11,9 @@
       </div>
 
       <div class="input-group">
-        <input formControlName="genre" placeholder=" " required />
+        <select formControlName="genre" required>
+          <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
+        </select>
         <label>Genre</label>
       </div>
 
@@ -30,7 +32,6 @@
         <input type="file" (change)="onFilesChange($event)" multiple />
       </div>
 
-      <!-- Image preview -->
       <div class="preview-grid" *ngIf="imagePreviews.length">
         <img *ngFor="let img of imagePreviews" [src]="img" />
       </div>
@@ -40,7 +41,6 @@
         <input type="file" accept="video/*" (change)="onVideoChange($event)" />
       </div>
 
-      <!-- Video preview -->
       <div class="video-preview" *ngIf="videoPreview">
         <video [src]="videoPreview" controls></video>
       </div>
