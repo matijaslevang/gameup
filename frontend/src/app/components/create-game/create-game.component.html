@@ -1,14 +1,53 @@
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <input formControlName="name" placeholder="Name" />
-  <input formControlName="genre" placeholder="Genre" />
-  <textarea formControlName="description" placeholder="Description"></textarea>
-  <input type="date" formControlName="release_date" />
+<div class="form-container">
+  <div class="form-card">
+    <h1>Add New Game</h1>
+    <p class="subtitle">Fill in the details below</p>
 
-  <input type="file" (change)="onFilesChange($event)" multiple />
+    <form [formGroup]="form" (ngSubmit)="submit()">
 
-  <input type="file" accept="video/*" (change)="onVideoChange($event)" />
+      <div class="input-group">
+        <input formControlName="name" placeholder=" " required />
+        <label>Name</label>
+      </div>
 
-  <button type="submit" [disabled]="isSubmitting">
-    {{ isSubmitting ? 'Submitting...' : 'Create Game' }}
-  </button>
-</form>
+      <div class="input-group">
+        <input formControlName="genre" placeholder=" " required />
+        <label>Genre</label>
+      </div>
+
+      <div class="input-group">
+        <textarea formControlName="description" placeholder=" " rows="4"></textarea>
+        <label>Description</label>
+      </div>
+
+      <div class="input-group">
+        <input type="date" formControlName="release_date" />
+        <label class="active">Release Date</label>
+      </div>
+
+      <div class="file-group">
+        <label>Images</label>
+        <input type="file" (change)="onFilesChange($event)" multiple />
+      </div>
+
+      <!-- Image preview -->
+      <div class="preview-grid" *ngIf="imagePreviews.length">
+        <img *ngFor="let img of imagePreviews" [src]="img" />
+      </div>
+
+      <div class="file-group">
+        <label>Gameplay Video</label>
+        <input type="file" accept="video/*" (change)="onVideoChange($event)" />
+      </div>
+
+      <!-- Video preview -->
+      <div class="video-preview" *ngIf="videoPreview">
+        <video [src]="videoPreview" controls></video>
+      </div>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : 'Create Game' }}
+      </button>
+    </form>
+  </div>
+</div>

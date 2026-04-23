@@ -24,6 +24,8 @@ export class CreateGameComponent {
   selectedFiles: File[] = [];
   selectedVideo: File | null = null;
   isSubmitting: boolean = false;
+  imagePreviews: string[] = [];
+  videoPreview: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -43,12 +45,31 @@ export class CreateGameComponent {
   onFilesChange(event: any) {
     if (event.target.files && event.target.files.length > 0) {
       this.selectedFiles = Array.from(event.target.files);
+      this.imagePreviews = [];
+
+      this.selectedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagePreviews.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   }
 
   onVideoChange(event: any) {
     if (event.target.files && event.target.files.length > 0) {
       this.selectedVideo = event.target.files[0];
+
+      if (this.selectedVideo) {
+        this.videoPreview = URL.createObjectURL(this.selectedVideo);
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.videoPreview) {
+      URL.revokeObjectURL(this.videoPreview);
     }
   }
 
