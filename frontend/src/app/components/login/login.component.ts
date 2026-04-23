@@ -23,10 +23,8 @@ export class LoginComponent {
   
 
   login() {
-    console.log("a")
     this.auth.login(this.form.value).subscribe((res: any) => {
       localStorage.setItem('token', res.token);
-      console.log(res.token)
       this.router.navigate(['/']);
     });
   }
