@@ -14,6 +14,8 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use axum::middleware;
 use axum::body::Bytes;
 use axum::response::IntoResponse;
+use reqwest::Body as ReqwestBody;
+use axum::extract::DefaultBodyLimit;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Claims {
@@ -103,6 +105,60 @@ async fn forward_get_images(
     Ok((status, body).into_response())
 }
 
+async fn forward_upload_videos(
+    Path(game_id): Path<i32>,
+    mut req: Request<axum::body::Body>,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    let headers = req.headers().clone();
+
+    let stream = req.into_body().into_data_stream();
+    let body = ReqwestBody::wrap_stream(stream);
+
+    let mut request_builder = client
+        .post(format!("http://video-service:8004/videos/{}", game_id));
+
+    for (key, value) in headers.iter() {
+        request_builder = request_builder.header(key, value);
+    }
+
+    let resp = request_builder
+        .body(body)
+        .send()
+        .await
+        .map_err(|e| {
+            println!("Forward error: {:?}", e);
+            StatusCode::BAD_GATEWAY
+        })?;
+
+    let status = resp.status();
+    let body = resp.bytes().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    Ok((
+        status,
+        [(header::CONTENT_TYPE, "application/json")],
+        body,
+    ).into_response())
+}
+
+async fn forward_get_videos(
+    Path(game_id): Path<i32>,
+) -> Result<Response, StatusCode> {
+    let resp = reqwest::get(
+        format!("http://video-service:8004/videos/{}", game_id)
+    )
+    .await
+    .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = axum::http::StatusCode::from_u16(resp.status().as_u16())
+        .unwrap();
+
+    let body = resp.bytes().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    Ok((status, body).into_response())
+}
+
 async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
     let resp = reqwest::Client::new()
         .post("http://game-service:8001/games")
@@ -178,6 +234,7 @@ async fn main() {
     let protected_routes = Router::new()
         .route("/api/games", post(forward_create_game))
         .route("/api/images/:game_id", post(forward_upload_images))
+        .route("/api/videos/:game_id", post(forward_upload_videos))
         .route_layer(middleware::from_fn(auth_middleware));
 
     let app = Router::new()
@@ -186,6 +243,8 @@ async fn main() {
         .route("/api/games/:id", get(forward_game))
         .route("/api/images/:game_id", get(forward_get_images))
         
+        .route("/api/videos/:game_id", get(forward_get_videos))
+        
         // auth routes (forward to auth service)
         .route("/api/login", post(forward_login))
         .route("/api/register", post(forward_register))
@@ -193,7 +252,8 @@ async fn main() {
         // protected
         .merge(protected_routes)
 
-        .layer(cors);
+        .layer(cors)
+        .layer(DefaultBodyLimit::max(1024 * 1024 * 500));
 
     let listener = TcpListener::bind("0.0.0.0:8000").await.unwrap();
 
