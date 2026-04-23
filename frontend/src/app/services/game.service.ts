@@ -23,4 +23,12 @@ export class GameService {
   getGame(id: string): Observable<Game> {
     return this.http.get<Game>(this.apiUrl + "/" + id)
   }
+
+  deleteGame(id: string): Observable<any> {
+    return this.http.delete<any>(this.apiUrl + "/" + id)
+  }
+
+  editGame(data: CreateGame, id: string): Observable<CreateGameResponse> {
+    return this.http.put<CreateGameResponse>(this.apiUrl + "/" + id, data)
+  }
 }
