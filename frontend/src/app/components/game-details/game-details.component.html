@@ -1,26 +1,60 @@
-<h2>Game Details</h2>
+<div class="game-page">
 
-<div *ngIf="game">
-  <p><b>Name:</b> {{ game.name }}</p>
-  <p><b>Genre:</b> {{ game.genre }}</p>
-  <p><b>Description:</b> {{ game.description }}</p>
-  <p><b>Release Date:</b> {{ game.release_date }}</p>
-</div>
+  <div class="game-header">
+    <div class="title-row">
+      <h1>{{ game?.name }}</h1>
 
-<div *ngIf="images.length > 0">
-  <h3>Images</h3>
-  <div class="image-grid">
-    <img *ngFor="let img of images" [src]="img" alt="Game image" />
+      <div class="actions">
+        <button class="edit-btn" (click)="onEdit()">Edit</button>
+        <button class="delete-btn" (click)="onDelete()">Delete</button>
+      </div>
+    </div>
+
+    <p class="meta">
+      <span>{{ game?.genre }}</span> •
+      <span>Released {{ game?.release_date | date }}</span>
+    </p>
   </div>
-</div>
 
-<div *ngIf="videos.length > 0">
-  <h3>Videos</h3>
+  <div class="game-content">
+    <p class="description">{{ game?.description }}</p>
+  </div>
 
-  <video
-    *ngFor="let video of videos"
-    [src]="video"
-    controls
-    width="400">
-  </video>
+  <div *ngIf="images.length > 0" class="section">
+    <h2>Images</h2>
+
+    <div class="carousel">
+
+      <button class="nav left" (click)="prevImage()">‹</button>
+
+      <div class="image-wrapper">
+        <img
+          [src]="images[currentImageIndex]"
+          [class.fade]="true"
+          alt="Game image"
+        />
+      </div>
+
+      <button class="nav right" (click)="nextImage()">›</button>
+    </div>
+
+    <div class="dots">
+      <span
+        *ngFor="let img of images; let i = index"
+        [class.active]="i === currentImageIndex"
+        (click)="currentImageIndex = i">
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="videos.length > 0" class="section">
+    <h2>Videos</h2>
+
+    <div class="video-grid">
+      <div class="video-wrapper" *ngFor="let video of videos">
+        <video [src]="video" controls></video>
+      </div>
+    </div>
+  </div>
+
 </div>
