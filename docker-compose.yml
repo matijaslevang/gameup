@@ -51,5 +51,13 @@ services:
     volumes:
       - ./uploads:/app/uploads
 
+  video-service:
+    build: ./backend/video-service
+    container_name: video-service
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./video:/app/video
+
 volumes:
   postgres_data:
