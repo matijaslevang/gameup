@@ -4,7 +4,7 @@
     <div class="title-row">
       <h1>{{ game?.name }}</h1>
 
-      <div class="actions">
+      <div *ngIf="isLoggedIn" class="actions">
         <button class="edit-btn" (click)="onEdit()">Edit</button>
         <button class="delete-btn" (click)="onDelete()">Delete</button>
       </div>

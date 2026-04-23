@@ -5,6 +5,7 @@ import { Game } from '../../models/game.model';
 import { ImageService } from '../../services/image.service';
 import { GameService } from '../../services/game.service';
 import { VideoService } from '../../services/video.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-game-details',
@@ -18,14 +19,18 @@ export class GameDetailsComponent implements OnInit {
   images: string[] = [];
   videos: string[] = [];
   currentImageIndex: number = 0;
+  isLoggedIn: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private imageService: ImageService,
     private gameService: GameService,
     private videoService: VideoService,
+    private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    this.isLoggedIn = authService.getToken() !== null
+  }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -63,10 +68,10 @@ export class GameDetailsComponent implements OnInit {
   onDelete() {
     if (!confirm('Are you sure you want to delete this game?')) return;
 
-    /*this.gameService.deleteGame(this.game?.id).subscribe({
-      next: () => this.router.navigate(['/games']),
+    this.gameService.deleteGame(this.game?.id).subscribe({
+      next: () => this.router.navigate(['']),
       error: (err) => console.error(err)
-    });*/
+    });
   }
 
   nextImage() {
