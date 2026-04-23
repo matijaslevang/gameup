@@ -23,5 +23,5 @@ export class ImageService {
 
   getImages(gameId: string) {
     return this.http.get<string[]>(this.apiUrl + "/" + gameId);
-}
+  }
 }

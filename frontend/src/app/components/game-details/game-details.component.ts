@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Game } from '../../models/game.model';
 import { ImageService } from '../../services/image.service';
 import { GameService } from '../../services/game.service';
+import { VideoService } from '../../services/video.service';
 
 @Component({
   selector: 'app-game-details',
@@ -15,12 +16,13 @@ export class GameDetailsComponent implements OnInit {
 
   game: any;
   images: string[] = [];
+  videos: string[] = []
 
   constructor(
     private route: ActivatedRoute,
-    private http: HttpClient,
     private imageService: ImageService,
-    private gameService: GameService
+    private gameService: GameService,
+    private videoService: VideoService
   ) {}
 
   ngOnInit() {
@@ -35,6 +37,16 @@ export class GameDetailsComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error loading images', err);
+          }
+        })
+
+        this.videoService.getVideos(id!).subscribe({
+          next: (video) => {
+            this.videos = video
+            console.log(video)
+          },
+          error: (err) => {
+            console.error('Error loading videos', err)
           }
         })
       }

@@ -6,6 +6,8 @@
 
   <input type="file" (change)="onFilesChange($event)" multiple />
 
+  <input type="file" accept="video/*" (change)="onVideoChange($event)" />
+
   <button type="submit" [disabled]="isSubmitting">
     {{ isSubmitting ? 'Submitting...' : 'Create Game' }}
   </button>

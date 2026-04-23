@@ -13,3 +13,14 @@
     <img *ngFor="let img of images" [src]="img" alt="Game image" />
   </div>
 </div>
+
+<div *ngIf="videos.length > 0">
+  <h3>Videos</h3>
+
+  <video
+    *ngFor="let video of videos"
+    [src]="video"
+    controls
+    width="400">
+  </video>
+</div>

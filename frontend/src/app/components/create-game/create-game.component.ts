@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { GameService } from '../../services/game.service';
 import { Router } from '@angular/router';
 import { ImageService } from '../../services/image.service';
+import { VideoService } from '../../services/video.service';
 
 @Component({
   selector: 'app-create-game',
@@ -21,12 +22,14 @@ export class CreateGameComponent {
 
   form: FormGroup;
   selectedFiles: File[] = [];
+  selectedVideo: File | null = null;
   isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private gameService: GameService,
     private imageService: ImageService,
+    private videoService: VideoService,
     private router: Router
   ) {
     this.form = this.fb.group({
@@ -43,6 +46,12 @@ export class CreateGameComponent {
     }
   }
 
+  onVideoChange(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedVideo = event.target.files[0];
+    }
+  }
+
   submit() {
     if (this.form.invalid) return;
     this.isSubmitting = true;
@@ -53,15 +62,33 @@ export class CreateGameComponent {
 
         const gameId = game.id;
 
-        if (this.selectedFiles.length > 0) {
-          this.imageService.uploadImagesForGame(gameId, this.selectedFiles).subscribe({
-            next: () => console.log('Images uploaded successfully'),
-            error: (err) => console.error('Error uploading images', err)
+        const uploadImages$ = this.selectedFiles.length > 0
+          ? this.imageService.uploadImagesForGame(gameId, this.selectedFiles)
+          : null;
+
+        const uploadVideo$ = this.selectedVideo
+          ? this.videoService.uploadVideosForGame(gameId, [this.selectedVideo])
+          : null;
+
+        // handle combinations cleanly
+        if (uploadImages$) {
+          uploadImages$.subscribe({
+            next: () => console.log('Images uploaded'),
+            error: (err) => console.error(err)
           });
-        } else {
+        }
+
+        if (uploadVideo$) {
+          uploadVideo$.subscribe({
+            next: () => console.log('Video uploaded'),
+            error: (err) => console.error(err)
+          });
+        }
+
+        setTimeout(() => {
           this.isSubmitting = false;
           this.router.navigate(['/games', gameId]);
-        }
+        }, 500);
       },
       error: (err) => {
         console.error('Error creating game', err);
