@@ -1,11 +1,7 @@
 use axum::{
-    extract::{Multipart, Path},
-    routing::{post, get},
-    Router,
-    http::StatusCode,
-    Json,
+    Json, Router, extract::{Multipart, Path}, http::StatusCode, routing::{delete, get, post}
 };
-use std::{fs, io::Write};
+use std::fs;
 use tower_http::services::ServeDir;
 use tokio::io::AsyncWriteExt;
 use axum::extract::DefaultBodyLimit;
@@ -87,11 +83,25 @@ async fn get_videos(Path(game_id): Path<i32>) -> Json<Vec<String>> {
     Json(urls)
 }
 
+async fn delete_videos(
+    Path(game_id): Path<i32>,
+) -> Result<StatusCode, StatusCode> {
+    let dir = format!("/app/video/{}", game_id);
+
+    if std::path::Path::new(&dir).exists() {
+        std::fs::remove_dir_all(&dir)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/videos/:game_id", post(upload_videos))
         .route("/videos/:game_id", get(get_videos))
+        .route("/videos/:game_id", delete(delete_videos))
         .nest_service("/video", ServeDir::new("/app/video"))
         .layer(DefaultBodyLimit::max(1024 * 1024 * 500));
 

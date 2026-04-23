@@ -9,6 +9,7 @@ use axum::extract::State;
 use serde::Deserialize;
 use axum::extract::Path;
 use sqlx::types::chrono::NaiveDate;
+use axum::http::StatusCode;
 
 #[derive(Serialize)]
 struct CreateGameResponse {
@@ -79,6 +80,21 @@ async fn get_game(
     Json(game)
 }
 
+async fn delete_game(
+    Path(id): Path<i32>,
+    State(pool): State<PgPool>,
+) -> StatusCode {
+    let result = sqlx::query("DELETE FROM games WHERE id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await;
+
+    match result {
+        Ok(_) => StatusCode::NO_CONTENT,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
@@ -110,22 +126,9 @@ async fn main() {
     .await
     .unwrap();
 
-    sqlx::query(
-        r#"
-        CREATE TABLE IF NOT EXISTS game_images (
-            id SERIAL PRIMARY KEY,
-            game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
-            image_url TEXT NOT NULL
-        );
-        "#
-    )
-    .execute(&pool)
-    .await
-    .unwrap();
-
     let app = Router::new()
         .route("/games", get(get_games).post(create_game))
-        .route("/games/:id", get(get_game))
+        .route("/games/:id", get(get_game).delete(delete_game))
         .with_state(pool);
 
     let listener = TcpListener::bind("0.0.0.0:8001").await.unwrap();

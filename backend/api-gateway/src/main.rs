@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post};
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
 use axum::http::Method;
@@ -107,7 +107,7 @@ async fn forward_get_images(
 
 async fn forward_upload_videos(
     Path(game_id): Path<i32>,
-    mut req: Request<axum::body::Body>,
+    req: Request<axum::body::Body>,
 ) -> Result<Response, StatusCode> {
     let client = reqwest::Client::new();
 
@@ -198,6 +198,33 @@ async fn forward_game(Path(id): Path<i32>) -> String {
         .unwrap()
 }
 
+async fn forward_delete_game(
+    Path(id): Path<i32>,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    // delete images (ignore failure)
+    let _ = client
+        .delete(format!("http://image-service:8003/images/{}", id))
+        .send()
+        .await;
+
+    // delete videos (ignore failure)
+    let _ = client
+        .delete(format!("http://video-service:8004/videos/{}", id))
+        .send()
+        .await;
+
+    // delete game (main operation)
+    let resp = client
+        .delete(format!("http://game-service:8001/games/{}", id))
+        .send()
+        .await
+        .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    Ok(StatusCode::from_u16(resp.status().as_u16()).unwrap().into_response())
+}
+
 async fn forward_login(body: Bytes) -> String {
     reqwest::Client::new()
         .post("http://auth-service:8002/login")
@@ -228,13 +255,14 @@ async fn forward_register(body: Bytes) -> String {
 async fn main() {
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_methods([Method::GET, Method::POST])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::PUT])
         .allow_headers(Any);
 
     let protected_routes = Router::new()
         .route("/api/games", post(forward_create_game))
         .route("/api/images/:game_id", post(forward_upload_images))
         .route("/api/videos/:game_id", post(forward_upload_videos))
+        .route("/api/games/:id", delete(forward_delete_game))
         .route_layer(middleware::from_fn(auth_middleware));
 
     let app = Router::new()

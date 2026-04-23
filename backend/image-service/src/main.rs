@@ -1,9 +1,5 @@
 use axum::{
-    extract::{Multipart, Path},
-    routing::post,
-    routing::get,
-    Router,
-    http::StatusCode,
+    Router, extract::{Multipart, Path}, http::StatusCode, routing::{delete, get, post}
 };
 use std::{fs, io::Write};
 use tokio::net::TcpListener;
@@ -58,11 +54,25 @@ async fn get_images(Path(game_id): Path<i32>) -> Json<Vec<String>> {
     Json(urls)
 }
 
+async fn delete_images(
+    Path(game_id): Path<i32>,
+) -> Result<StatusCode, StatusCode> {
+    let dir = format!("/app/uploads/{}", game_id);
+
+    if std::path::Path::new(&dir).exists() {
+        std::fs::remove_dir_all(&dir)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/images/:game_id", post(upload_images))
         .route("/images/:game_id", get(get_images))
+        .route("/images/:game_id", delete(delete_images))
         .nest_service("/uploads", ServeDir::new("/app/uploads"))
         .layer(DefaultBodyLimit::max(1024 * 1024 * 500));
 
