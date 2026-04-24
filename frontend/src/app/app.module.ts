@@ -11,6 +11,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CreateGameComponent } from './components/create-game/create-game.component';
+import { EditGameComponent } from './components/edit-game/edit-game.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { CreateGameComponent } from './components/create-game/create-game.compon
     NavbarComponent,
     LoginComponent,
     CreateGameComponent,
+    EditGameComponent,
   ],
   imports: [
     BrowserModule,

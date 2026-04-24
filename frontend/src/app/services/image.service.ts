@@ -21,4 +21,8 @@ export class ImageService {
   getImages(gameId: string) {
     return this.http.get<string[]>(this.apiUrl + "/" + gameId);
   }
+
+  deleteImagesForGame(gameId: string): any {
+    return this.http.delete<any>(this.apiUrl + "/" + gameId)
+  }
 }

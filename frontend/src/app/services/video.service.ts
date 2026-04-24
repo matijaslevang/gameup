@@ -19,4 +19,8 @@ export class VideoService {
   getVideos(gameId: string) {
     return this.http.get<string[]>(this.apiUrl + "/" + gameId);
   }
+
+  deleteVideosForGame(gameId: string): any {
+    return this.http.delete<any>(this.apiUrl + "/" + gameId)
+  }
 }

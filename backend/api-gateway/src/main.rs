@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::{delete, get, post};
+use axum::routing::{delete, get, post, put};
 use tokio::net::TcpListener;
 use tower_http::cors::{CorsLayer, Any};
 use axum::http::Method;
@@ -105,6 +105,22 @@ async fn forward_get_images(
     Ok((status, body).into_response())
 }
 
+async fn forward_delete_images(
+    Path(id): Path<i32>,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    let resp = client
+        .delete(format!("http://image-service:8003/images/{}", id))
+        .send()
+        .await
+        .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = StatusCode::from_u16(resp.status().as_u16()).unwrap();
+
+    Ok(status.into_response())
+}
+
 async fn forward_upload_videos(
     Path(game_id): Path<i32>,
     req: Request<axum::body::Body>,
@@ -157,6 +173,22 @@ async fn forward_get_videos(
     let body = resp.bytes().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
 
     Ok((status, body).into_response())
+}
+
+async fn forward_delete_videos(
+    Path(id): Path<i32>,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    let resp = client
+        .delete(format!("http://video-service:8004/videos/{}", id))
+        .send()
+        .await
+        .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = StatusCode::from_u16(resp.status().as_u16()).unwrap();
+
+    Ok(status.into_response())
 }
 
 async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
@@ -225,6 +257,25 @@ async fn forward_delete_game(
     Ok(StatusCode::from_u16(resp.status().as_u16()).unwrap().into_response())
 }
 
+async fn forward_update_game(
+    Path(id): Path<i32>,
+    body: Bytes,
+) -> Result<Response, StatusCode> {
+    let client = reqwest::Client::new();
+
+    let resp = client
+        .put(format!("http://game-service:8001/games/{}", id))
+        .header("Content-Type", "application/json")
+        .body(body)
+        .send()
+        .await
+        .map_err(|_| StatusCode::BAD_GATEWAY)?;
+
+    let status = StatusCode::from_u16(resp.status().as_u16()).unwrap();
+
+    Ok(status.into_response())
+}
+
 async fn forward_login(body: Bytes) -> String {
     reqwest::Client::new()
         .post("http://auth-service:8002/login")
@@ -263,6 +314,9 @@ async fn main() {
         .route("/api/images/:game_id", post(forward_upload_images))
         .route("/api/videos/:game_id", post(forward_upload_videos))
         .route("/api/games/:id", delete(forward_delete_game))
+        .route("/api/games/:id", put(forward_update_game))
+        .route("/api/images/:game_id", delete(forward_delete_images))
+        .route("/api/videos/:game_id", delete(forward_delete_videos))
         .route_layer(middleware::from_fn(auth_middleware));
 
     let app = Router::new()

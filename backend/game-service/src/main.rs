@@ -95,6 +95,35 @@ async fn delete_game(
     }
 }
 
+async fn update_game(
+    Path(id): Path<i32>,
+    State(pool): State<PgPool>,
+    Json(payload): Json<CreateGame>,
+) -> StatusCode {
+    let result = sqlx::query(
+        r#"
+        UPDATE games
+        SET name = $1,
+            genre = $2,
+            description = $3,
+            release_date = $4
+        WHERE id = $5
+        "#
+    )
+    .bind(payload.name)
+    .bind(payload.genre)
+    .bind(payload.description)
+    .bind(payload.release_date)
+    .bind(id)
+    .execute(&pool)
+    .await;
+
+    match result {
+        Ok(_) => StatusCode::NO_CONTENT,
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let database_url = env::var("DATABASE_URL").unwrap();
@@ -128,7 +157,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/games", get(get_games).post(create_game))
-        .route("/games/:id", get(get_game).delete(delete_game))
+        .route("/games/:id", get(get_game).put(update_game).delete(delete_game))
         .with_state(pool);
 
     let listener = TcpListener::bind("0.0.0.0:8001").await.unwrap();
