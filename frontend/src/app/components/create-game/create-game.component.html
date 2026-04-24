@@ -29,7 +29,7 @@
 
       <div class="file-group">
         <label>Images</label>
-        <input type="file" (change)="onFilesChange($event)" multiple />
+        <input type="file" accept="image/*" (change)="onFilesChange($event)" multiple />
       </div>
 
       <div class="preview-grid" *ngIf="imagePreviews.length">
