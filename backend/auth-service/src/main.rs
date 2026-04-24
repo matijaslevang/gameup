@@ -124,6 +124,20 @@ async fn main() {
         .expect("Failed to connect to DB");
 
     sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL
+        );
+        "#
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    sqlx::query(
         "INSERT INTO users (username, password_hash, role)
         VALUES ($1, $2, 'admin')
         ON CONFLICT (username) DO NOTHING"
