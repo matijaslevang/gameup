@@ -1,0 +1,74 @@
+<div class="game-page">
+
+  <div class="game-header">
+    <div class="title-row">
+      <h1>{{ game?.name }}</h1>
+
+      <div *ngIf="isLoggedIn" class="actions">
+        <button class="edit-btn" (click)="onEdit()">Edit</button>
+        <button class="delete-btn" (click)="onDelete()">Delete</button>
+      </div>
+    </div>
+
+    <p class="meta">
+      <span>{{ game?.genre }}</span> •
+      <span>Released {{ game?.release_date | date }}</span>
+    </p>
+  </div>
+
+  <div class="game-content">
+    <p class="description">{{ game?.description }}</p>
+  </div>
+
+  <h2>Images</h2>
+  <div *ngIf="images.length > 0" class="section">
+    
+
+    <div class="carousel">
+
+      <button class="nav left" (click)="prevImage()">‹</button>
+
+      <div class="image-wrapper">
+        <img
+          [src]="images[currentImageIndex]"
+          [class.fade]="true"
+          alt="Game image"
+        />
+      </div>
+
+      <button class="nav right" (click)="nextImage()">›</button>
+    </div>
+
+    <div class="dots">
+      <span
+        *ngFor="let img of images; let i = index"
+        [class.active]="i === currentImageIndex"
+        (click)="currentImageIndex = i">
+      </span>
+    </div>
+  </div>
+  <div class="section" *ngIf="images.length === 0 && !errorImages && !isLoadingImages">
+    <h3>No images have been uploaded</h3>
+  </div>
+  <div class="section" *ngIf="errorImages">
+    <h3>The images service is currently unavailable</h3>
+  </div>
+
+  <h2>Videos</h2>
+  <div *ngIf="videos.length > 0" class="section">
+    
+
+    <div class="video-grid">
+      <div class="video-wrapper" *ngFor="let video of videos">
+        <video [src]="video" controls></video>
+      </div>
+    </div>
+  </div>
+  <div class="section" *ngIf="videos.length === 0 && !errorVideos && !isLoadingVideos">
+    <h3>No videos have been uploaded</h3>
+  </div>
+  <div class="section" *ngIf="errorVideos">
+    <h3>The video service is currently unavailable</h3>
+  </div>
+
+</div>

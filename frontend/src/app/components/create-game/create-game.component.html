@@ -1,0 +1,53 @@
+<div class="form-container">
+  <div class="form-card">
+    <h1>Add New Game</h1>
+    <p class="subtitle">Fill in the details below</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <div class="input-group">
+        <input formControlName="name" placeholder=" " required />
+        <label>Name</label>
+      </div>
+
+      <div class="input-group">
+        <select formControlName="genre" required>
+          <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
+        </select>
+        <label>Genre</label>
+      </div>
+
+      <div class="input-group">
+        <textarea formControlName="description" placeholder=" " rows="4"></textarea>
+        <label>Description</label>
+      </div>
+
+      <div class="input-group">
+        <input type="date" formControlName="release_date" />
+        <label class="active">Release Date</label>
+      </div>
+
+      <div class="file-group">
+        <label>Images</label>
+        <input type="file" accept="image/*" (change)="onFilesChange($event)" multiple />
+      </div>
+
+      <div class="preview-grid" *ngIf="imagePreviews.length">
+        <img *ngFor="let img of imagePreviews" [src]="img" />
+      </div>
+
+      <div class="file-group">
+        <label>Gameplay Video</label>
+        <input type="file" accept="video/*" (change)="onVideoChange($event)" />
+      </div>
+
+      <div class="video-preview" *ngIf="videoPreview">
+        <video [src]="videoPreview" controls></video>
+      </div>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : 'Create Game' }}
+      </button>
+    </form>
+  </div>
+</div>

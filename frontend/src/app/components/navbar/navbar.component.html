@@ -1,0 +1,16 @@
+<nav>
+  <h1>Gameup</h1>
+
+  <div class="nav-center">
+    <a routerLink="/">Games</a>
+
+    <ng-container *ngIf="!isLoggedIn()">
+      <a routerLink="/login">Login</a>
+    </ng-container>
+
+    <ng-container *ngIf="isLoggedIn()">
+      <a routerLink="/add-game">Add new game</a>
+      <button (click)="logout()">Logout</button>
+    </ng-container>
+  </div>
+</nav>

@@ -1,0 +1,164 @@
+.form-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f3f4;
+  padding: 20px;
+}
+
+.form-card {
+  background: white;
+  padding: 40px;
+  width: 500px;
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.form-card h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.subtitle {
+  margin: 10px 0 30px;
+  color: #5f6368;
+  font-size: 14px;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group input,
+.input-group textarea {
+  width: 100%;
+  padding: 12px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+}
+
+.input-group input:focus,
+.input-group textarea:focus {
+  border-color: #1a73e8;
+}
+
+.input-group label {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  background: white;
+  padding: 0 4px;
+  color: #5f6368;
+  font-size: 14px;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label,
+.input-group textarea:focus + label,
+.input-group textarea:not(:placeholder-shown) + label,
+.input-group label.active {
+  top: -8px;
+  font-size: 12px;
+  color: #1a73e8;
+}
+
+.file-group {
+  margin-bottom: 20px;
+}
+
+.file-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #5f6368;
+}
+
+.file-group input {
+  width: 100%;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #1669c1;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.form-card h1 {
+  margin: 0;
+  font-size: 26px;
+  text-align: center;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.preview-grid img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.video-preview {
+  margin-bottom: 20px;
+}
+
+.video-preview video {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 12px 10px;
+  border: 1px solid #dadce0;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  background-color: white;
+  appearance: none;
+}
+
+.input-group select:focus {
+  border-color: #1a73e8;
+}
+
+.input-group select:focus + label,
+.input-group select:not([value=""]) + label {
+  top: -8px;
+  font-size: 12px;
+  color: #1a73e8;
+}
