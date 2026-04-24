@@ -1,4 +1,24 @@
-<h1 class="title">All Games</h1>
+<div class="header">
+  <div class="spacer"></div>
+
+  <h1 class="title">All Games</h1>
+
+  <div class="search-controls">
+    <input
+      type="text"
+      [(ngModel)]="searchName"
+      placeholder="Search games..."
+    />
+
+    <select [(ngModel)]="searchGenre">
+      <option value="">All Genres</option>
+      <option *ngFor="let g of genres" [value]="g">{{ g }}</option>
+    </select>
+
+    <button (click)="onSearch()">Search</button>
+    <button class="reset" (click)="onReset()">Reset</button>
+  </div>
+</div>
 
 <div class="cards-container">
   <div class="game-card" *ngFor="let game of games">

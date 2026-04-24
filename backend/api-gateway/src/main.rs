@@ -210,8 +210,18 @@ async fn forward_create_game(body: Bytes) -> impl axum::response::IntoResponse {
     )
 }
 
-async fn forward_games() -> String {
-    let resp = reqwest::get("http://game-service:8001/games")
+use axum::extract::Query;
+use std::collections::HashMap;
+
+async fn forward_games(
+    Query(params): Query<HashMap<String, String>>,
+) -> String {
+    let client = reqwest::Client::new();
+
+    let resp = client
+        .get("http://game-service:8001/games")
+        .query(&params)
+        .send()
         .await
         .unwrap()
         .text()

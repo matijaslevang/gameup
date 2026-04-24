@@ -10,6 +10,7 @@ use serde::Deserialize;
 use axum::extract::Path;
 use sqlx::types::chrono::NaiveDate;
 use axum::http::StatusCode;
+use axum::extract::Query;
 
 #[derive(Serialize)]
 struct CreateGameResponse {
@@ -34,11 +35,49 @@ struct CreateGame {
     release_date: Option<NaiveDate>,
 }
 
-async fn get_games(State(pool): State<PgPool>) -> Json<Vec<Game>> {
-    let games = sqlx::query_as::<_, Game>("SELECT id, name, genre, description, release_date, video_url FROM games")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
+#[derive(Deserialize)]
+struct GameQuery {
+    name: Option<String>,
+    genre: Option<String>,
+}
+
+async fn get_games(
+    State(pool): State<PgPool>,
+    Query(params): Query<GameQuery>,
+) -> Json<Vec<Game>> {
+    let mut query = String::from(
+        "SELECT id, name, genre, description, release_date, video_url FROM games"
+    );
+
+    let mut conditions = vec![];
+    let mut values: Vec<String> = vec![];
+
+    if let Some(name) = params.name {
+        if !name.trim().is_empty() {
+            conditions.push(format!("name ILIKE ${}", values.len() + 1));
+            values.push(format!("%{}%", name));
+        }
+    }
+
+    if let Some(genre) = params.genre {
+        if !genre.trim().is_empty() {
+            conditions.push(format!("genre = ${}", values.len() + 1));
+            values.push(genre);
+        }
+    }
+
+    if !conditions.is_empty() {
+        query.push_str(" WHERE ");
+        query.push_str(&conditions.join(" AND "));
+    }
+
+    let mut q = sqlx::query_as::<_, Game>(&query);
+
+    for value in values {
+        q = q.bind(value);
+    }
+
+    let games = q.fetch_all(&pool).await.unwrap();
 
     Json(games)
 }

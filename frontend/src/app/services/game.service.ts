@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateGame, CreateGameResponse, Game } from '../models/game.model';
 
@@ -12,8 +12,18 @@ export class GameService {
 
   constructor(private http: HttpClient) {}
 
-  getGames(): Observable<Game[]> {
-    return this.http.get<Game[]>(this.apiUrl);
+  getGames(search?: string, genre?: string): Observable<Game[]> {
+    let params = new HttpParams();
+
+    if (search && search.trim() !== '') {
+      params = params.set('name', search);
+    }
+
+    if (genre && genre.trim() !== '') {
+      params = params.set('genre', genre);
+    }
+
+    return this.http.get<Game[]>(this.apiUrl, { params });
   }
 
   createGame(data: CreateGame): Observable<CreateGameResponse> {
