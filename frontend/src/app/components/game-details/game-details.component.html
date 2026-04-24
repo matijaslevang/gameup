@@ -20,8 +20,9 @@
     <p class="description">{{ game?.description }}</p>
   </div>
 
+  <h2>Images</h2>
   <div *ngIf="images.length > 0" class="section">
-    <h2>Images</h2>
+    
 
     <div class="carousel">
 
@@ -46,15 +47,28 @@
       </span>
     </div>
   </div>
+  <div class="section" *ngIf="images.length === 0 && !errorImages && !isLoadingImages">
+    <h3>No images have been uploaded</h3>
+  </div>
+  <div class="section" *ngIf="errorImages">
+    <h3>The images service is currently unavailable</h3>
+  </div>
 
+  <h2>Videos</h2>
   <div *ngIf="videos.length > 0" class="section">
-    <h2>Videos</h2>
+    
 
     <div class="video-grid">
       <div class="video-wrapper" *ngFor="let video of videos">
         <video [src]="video" controls></video>
       </div>
     </div>
+  </div>
+  <div class="section" *ngIf="videos.length === 0 && !errorVideos && !isLoadingVideos">
+    <h3>No videos have been uploaded</h3>
+  </div>
+  <div class="section" *ngIf="errorVideos">
+    <h3>The video service is currently unavailable</h3>
   </div>
 
 </div>

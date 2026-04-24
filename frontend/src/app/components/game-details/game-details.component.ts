@@ -20,6 +20,10 @@ export class GameDetailsComponent implements OnInit {
   videos: string[] = [];
   currentImageIndex: number = 0;
   isLoggedIn: boolean = false;
+  errorVideos: boolean = false;
+  errorImages: boolean = false;
+  isLoadingImages: boolean = true;
+  isLoadingVideos: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,27 +38,31 @@ export class GameDetailsComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-
+    
     this.gameService.getGame(id!).subscribe({
       next: (game) => {
         this.game = game
         this.imageService.getImages(id!).subscribe({
           next: (images) => {
             this.images = images
-            console.log(images)
+            this.isLoadingImages = false;
           },
           error: (err) => {
             console.error('Error loading images', err);
+            this.errorImages = true
+            this.isLoadingImages = false;
           }
         })
 
         this.videoService.getVideos(id!).subscribe({
           next: (video) => {
             this.videos = video
-            console.log(video)
+            this.isLoadingVideos = false
           },
           error: (err) => {
             console.error('Error loading videos', err)
+            this.errorVideos = true
+            this.isLoadingVideos = false
           }
         })
       }

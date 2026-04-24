@@ -34,8 +34,8 @@
   margin-top: 40px;
 }
 
-.section h2 {
-  margin-bottom: 15px;
+h2 {
+  margin-top: 50px;
 }
 
 .image-grid {
@@ -161,7 +161,7 @@
   }
 }
 
-.section h2 {
+h2 {
   text-align: center;
 }
 
