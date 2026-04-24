@@ -1,11 +1,15 @@
 use axum::{
-    Router, extract::{Multipart, Path}, http::StatusCode, routing::{delete, get, post}
+    extract::{DefaultBodyLimit, Multipart, Path},
+    http::StatusCode,
+    routing::{delete, get, post},
+    Json, Router,
 };
-use std::{fs, io::Write};
+use std::{
+    fs,
+    io::Write,
+};
 use tokio::net::TcpListener;
-use axum::Json;
 use tower_http::services::ServeDir;
-use axum::extract::DefaultBodyLimit;
 
 async fn upload_images(
     Path(game_id): Path<i32>,

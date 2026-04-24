@@ -1,10 +1,11 @@
 use axum::{
-    Json, Router, extract::{Multipart, Path}, http::StatusCode, routing::{delete, get, post}
+    Json, Router, extract::{Multipart, Path, DefaultBodyLimit}, http::StatusCode, routing::{delete, get, post}, serve
 };
-use std::fs;
+use std::fs::{remove_dir_all, read_dir};
 use tower_http::services::ServeDir;
 use tokio::io::AsyncWriteExt;
-use axum::extract::DefaultBodyLimit;
+use tokio::fs::{create_dir_all, File};
+use tokio::net::TcpListener;
 
 
 async fn upload_videos(
@@ -13,7 +14,7 @@ async fn upload_videos(
 ) -> Result<StatusCode, StatusCode> {
     let upload_dir = format!("/app/video/{}", game_id);
 
-    if let Err(e) = tokio::fs::create_dir_all(&upload_dir).await {
+    if let Err(e) = create_dir_all(&upload_dir).await {
         println!("Failed to create dir: {:?}", e);
         return Err(StatusCode::INTERNAL_SERVER_ERROR);
     }
@@ -32,7 +33,7 @@ async fn upload_videos(
 
         let file_path = format!("{}/{}", upload_dir, file_name);
 
-        let mut file = match tokio::fs::File::create(&file_path).await {
+        let mut file = match File::create(&file_path).await {
             Ok(f) => f,
             Err(e) => {
                 println!("File create error: {:?}", e);
@@ -67,7 +68,7 @@ async fn get_videos(Path(game_id): Path<i32>) -> Json<Vec<String>> {
 
     let mut urls = vec![];
 
-    if let Ok(entries) = fs::read_dir(dir) {
+    if let Ok(entries) = read_dir(dir) {
         for entry in entries.flatten() {
             if let Some(file_name) = entry.file_name().to_str() {
                 let url = format!(
@@ -89,7 +90,7 @@ async fn delete_videos(
     let dir = format!("/app/video/{}", game_id);
 
     if std::path::Path::new(&dir).exists() {
-        std::fs::remove_dir_all(&dir)
+        remove_dir_all(&dir)
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     }
 
@@ -107,9 +108,9 @@ async fn main() {
 
     println!("Video service running on 0.0.0.0:8004");
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8004")
+    let listener = TcpListener::bind("0.0.0.0:8004")
         .await
         .unwrap();
 
-    axum::serve(listener, app).await.unwrap();
+    serve(listener, app).await.unwrap();
 }

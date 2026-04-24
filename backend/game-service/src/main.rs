@@ -1,16 +1,20 @@
-use axum::{routing::{get}, Json, Router};
-use serde::Serialize;
-use sqlx::PgPool;
-use tokio::net::TcpListener;
+use axum::{
+    extract::{Path, Query, State},
+    http::StatusCode,
+    routing::get,
+    Json, Router,
+};
+
+use serde::{Deserialize, Serialize};
+
+use sqlx::{PgPool, types::chrono::NaiveDate};
+
+use tokio::{
+    net::TcpListener,
+    time::{sleep, Duration},
+};
+
 use std::env;
-use std::time::Duration;
-use tokio::time::sleep;
-use axum::extract::State;
-use serde::Deserialize;
-use axum::extract::Path;
-use sqlx::types::chrono::NaiveDate;
-use axum::http::StatusCode;
-use axum::extract::Query;
 
 #[derive(Serialize)]
 struct CreateGameResponse {
